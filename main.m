@@ -15,6 +15,7 @@ bm = BalusModel(iJson);
 
 %グラフオブジェクトをつくる
 graph = bm.getGraph();
+plot(graph.graph);
 
 
 %アウトプット用のjsonテキストを取得
