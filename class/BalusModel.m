@@ -24,6 +24,7 @@ classdef BalusModel < handle
         
         function graph = getGraph(obj)
             %有向グラフとしてGraphオブジェクトを生成する
+            %ゾーンとのリンクがあるある場合は正常に動かない
             
             links = obj.contents.links;
             nodes = obj.contents.nodes;
@@ -37,15 +38,20 @@ classdef BalusModel < handle
             end
             
             %digraphを生成
-            fromNodeIDs = zeros(1,L);
-            toNodeIDs = zeros(1,L);
+            fromNodeIdx = zeros(1,L);
+            toNodeIdx = zeros(1,L);
             for i=1:L
-                fromNodeIDs(i) = getIndexOfMatch(nodeKey,string(links(i).fromKey));%fromKeyと一致するノードの番号（ID）
-                toNodeIDs(i) = getIndexOfMatch(nodeKey,string(links(i).toKey));%toKeyと一致するノードの番号（ID）
+                fid = getIndexOfMatch(nodeKey,string(links(i).fromKey));%fromKeyと一致するノードの番号（idx）
+                tid = getIndexOfMatch(nodeKey,string(links(i).toKey)); %toKeyと一致するノードの番号（idx）
+                
+                if fid ~= 0 && tid ~= 0 %ノードへのリンク、ノードからのリンクなどを無視
+                    fromNodeIdx(i) = fid;
+                    toNodeIdx(i) = tid;
+                end 
             end
-            g = digraph(fromNodeIDs, toNodeIDs);
+            g = digraph(fromNodeIdx, toNodeIdx);
             
-            
+
             %ノード情報テーブルに情報を追加
             nodeText = strings(N,1);%テキスト
             nodePositionX = zeros(N,1);%x座標
@@ -89,6 +95,10 @@ classdef BalusModel < handle
             
         end
         
+        function result = addZone(obj,zone)
+            
+        end
+        
         function nodeText = getAllNodeText(obj)
             %全てのノードのテキストを取得する
             %出力はstringsの配列
@@ -105,31 +115,89 @@ classdef BalusModel < handle
             model = struct('application', obj.application,'target', obj.target, 'contentType', obj.contentType, 'id', obj.id, 'contents', obj.contents);
             val = jsonencode(model);
         end
+                      
+        function result = addVoidZone(obj)
+            %空のzoneを1つ追加する
+            [n,~] = size(obj.contents.zones); %既存のzoneの数
+            newZone = BalusModel.getVoidZoneStruct();
+            obj.contents.zones(n+1) = newZone; %n+1番目に新しいzoneを追加
+            result = n+1;
+        end
     end
     methods(Static)
-       function c = nodeColors()
-           %nodeに使われている色
-           %nodes(x).style.themeColorに入る
-           c = [
-               "Red";
-               "Orange";
-               "Yellow";
-               "Green";
-               "YellowGreen";
-               "Blue";
-               "Purple";
-               "White";
-               ];
-       end
-       
-       function style = lineStyles()
-           %lineのスタイルのリスト
-           %links(x).style.lineStyleに入る
-           style = [
-               "Dashed";
-               "Solid";
-               ];
-       end
-   end
+        function c = nodeColor(idx)
+            %nodeに使われている色
+            %nodes(x).style.themeColorに入る
+            colors = [
+                "Red";
+                "Orange";
+                "Yellow";
+                "Green";
+                "YellowGreen";
+                "Blue";
+                "Purple";
+                "White";
+                ];
+            c = char(colors(idx));
+        end
+        
+        function style = lineStyles()
+            %lineのスタイルのリスト
+            %links(x).style.lineStyleに入る
+            style = [
+                'Dashed';
+                'Solid';
+                ];
+        end
+
+        function date = getDammyDate()
+            %ダミーの作成時間情報
+            %createdAtに入れる
+            date = '2700-01-01T00:00:00.000Z';
+        end
+        
+        function key = getDammyKey(type)
+            %ダミーのKeyを生成
+            %typeには'Node'や'StickyZone'などが入る
+            ch = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            [~,n] = size(ch);
+            code = "";
+            for i=1:21
+                code = append(code, ch(randi(n)));
+            end
+            
+            key = char(append(type, ':', code));
+        end
+        
+        function key = getDammyUserKey()
+            %ダミーのUserKeyを生成
+            %createduserKeyなどに入る
+            ch = '0123456789';
+            [~,n] = size(ch);
+            code = "";
+            for i=1:16
+                code = append(code, ch(randi(n)));
+            end
+            
+            key = char(append('User', ':', code));
+        end
+        
+        function zone = getVoidZoneStruct()
+            %空のzoneに相当するstructを生成
+            %BalusModel.contetns.zonesに突っ込むことができる
+            zone = struct('key',BalusModel.getDammyKey('StickyZone'));
+            zone.text = struct('value', '空のゾーン');
+            zone.position = struct('x', 300, 'y', 300);
+            zone.size = struct('width', 300, 'height', 300);
+            zone.style = struct('fontSize', 'L', 'themeColor', BalusModel.nodeColor(1));
+            zone.createdUserKey = BalusModel.getDammyUserKey(); 
+            zone.createdAt = BalusModel.getDammyDate();
+            zone.sourceNodeKey = [];
+            zone.containElementKeys = [];
+        end
+        
+        
+        
+    end
 end
 
