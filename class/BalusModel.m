@@ -121,6 +121,15 @@ classdef BalusModel < handle
                "White";
                ];
        end
+       
+       function style = lineStyles()
+           %lineのスタイルのリスト
+           %links(x).style.lineStyleに入る
+           style = [
+               "Dashed";
+               "Solid";
+               ];
+       end
    end
 end
 
