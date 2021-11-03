@@ -85,6 +85,21 @@ classdef BalusModel < handle
             
         end
         
+        function result = removeAllLinks(obj)
+            
+        end
+        
+        function nodeText = getAllNodeText(obj)
+            %全てのノードのテキストを取得する
+            %出力はstringsの配列
+            nodes = obj.contents.nodes;
+            [N,~] = size(nodes);%ノード数
+            nodeText = strings(N,1);%テキスト配列を初期化
+            for i=1:N
+                nodeText(i) = string(nodes(i).name.value);
+            end
+        end
+        
         function val = get.json(obj)
             %Balusにペーストできるjsonを取得する
             model = struct('application', obj.application,'target', obj.target, 'contentType', obj.contentType, 'id', obj.id, 'contents', obj.contents);

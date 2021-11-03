@@ -18,6 +18,7 @@ graph = bm.getGraph();
 plot(graph.graph);
 
 
+
 %アウトプット用のjsonテキストを取得
 oJson = bm.json; 
 
