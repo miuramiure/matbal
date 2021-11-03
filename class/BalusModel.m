@@ -91,12 +91,22 @@ classdef BalusModel < handle
             
         end
         
-        function result = removeAllLinks(obj)
-            
+        function result = removeAllNodes(obj)
+            %全てのノードを消す
+            obj.contents.nodes = [];
+            result = 1;
         end
         
-        function result = addZone(obj,zone)
-            
+        function result = removeAllLinks(obj)
+            %全てのリンクを消す
+            obj.contents.links = [];
+            result = 1;
+        end
+        
+        function result = removeAllZones(obj)
+            %全てのゾーンを消す
+            obj.contents.zones = [];
+            result = 1;
         end
         
         function nodeText = getAllNodeText(obj)
@@ -123,6 +133,7 @@ classdef BalusModel < handle
             obj.contents.zones(n+1) = newZone; %n+1番目に新しいzoneを追加
             result = n+1;
         end
+        
     end
     methods(Static)
         function c = nodeColor(idx)
